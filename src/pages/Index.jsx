@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Button, Image, Flex, Input, Table, Thead, Tbody, Tr, Th, Td, useToast } from "@chakra-ui/react";
+import { Box, Heading, Text, Button, Image, Flex, Input, Table, Thead, Tbody, Tr, Th, Td, useToast, VStack, HStack, IconButton } from "@chakra-ui/react";
 import { FaPlus, FaSearch, FaWrench, FaFileInvoice, FaComments, FaClock, FaDownload } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import InvoiceGenerator from "../components/InvoiceGenerator";
@@ -40,29 +40,29 @@ const Index = () => {
       </Flex>
 
       <Flex>
-        <Box bg="gray.50" w={200} p={4}>
-          <Button leftIcon={<FaWrench />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "dashboard" ? "solid" : "ghost"} onClick={() => setActiveTab("dashboard")}>
+        <VStack bg="gray.50" w={200} p={4} spacing={2} align="stretch">
+          <Button leftIcon={<FaWrench />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "dashboard" ? "solid" : "ghost"} onClick={() => setActiveTab("dashboard")}>
             Dashboard
           </Button>
-          <Button leftIcon={<FaFileInvoice />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "invoices" ? "solid" : "ghost"} onClick={() => setActiveTab("invoices")}>
+          <Button leftIcon={<FaFileInvoice />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "invoices" ? "solid" : "ghost"} onClick={() => setActiveTab("invoices")}>
             Invoices
           </Button>
-          <Button leftIcon={<FaSearch />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "estimates" ? "solid" : "ghost"} onClick={() => setActiveTab("estimates")}>
+          <Button leftIcon={<FaSearch />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "estimates" ? "solid" : "ghost"} onClick={() => setActiveTab("estimates")}>
             Estimates
           </Button>
-          <Button leftIcon={<FaWrench />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "tasks" ? "solid" : "ghost"} onClick={() => setActiveTab("tasks")}>
+          <Button leftIcon={<FaWrench />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "tasks" ? "solid" : "ghost"} onClick={() => setActiveTab("tasks")}>
             Tasks
           </Button>
-          <Button leftIcon={<FaComments />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "chat" ? "solid" : "ghost"} onClick={() => setActiveTab("chat")}>
+          <Button leftIcon={<FaComments />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "chat" ? "solid" : "ghost"} onClick={() => setActiveTab("chat")}>
             Team Chat
           </Button>
-          <Button leftIcon={<FaClock />} justifyContent="flex-start" w="100%" mb={2} variant={activeTab === "timesheet" ? "solid" : "ghost"} onClick={() => setActiveTab("timesheet")}>
+          <Button leftIcon={<FaClock />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "timesheet" ? "solid" : "ghost"} onClick={() => setActiveTab("timesheet")}>
             Timesheets
           </Button>
-          <Button leftIcon={<FaSearch />} justifyContent="flex-start" w="100%" variant={activeTab === "lookup" ? "solid" : "ghost"} onClick={() => setActiveTab("lookup")}>
+          <Button leftIcon={<FaSearch />} justifyContent="flex-start" colorScheme="blue" variant={activeTab === "lookup" ? "solid" : "ghost"} onClick={() => setActiveTab("lookup")}>
             Parts Lookup
           </Button>
-        </Box>
+        </VStack>
 
         <Box flex={1} p={8}>
           {renderContent()}
@@ -109,21 +109,52 @@ const InvoicesTab = () => {
 };
 
 const EstimatesTab = () => {
-  const [estimate, setEstimate] = useState(null);
+  const [estimates, setEstimates] = useState([]);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+   
+    const fetchEstimates = async () => {
+      const response = await fetch("/api/estimates");
+      const data = await response.json();
+      setEstimates(data);
+    };
+
+    fetchEstimates();
+  }, []);
 
   return (
     <Box>
       <Heading size="xl" mb={4}>
         Estimates
       </Heading>
-      {}
-      {estimate && (
-        <Box>
-          {}
-          <Text>Total Estimate: ${estimate.total}</Text>
-        </Box>
+      {estimates.length === 0 ? (
+        <Text>No estimates found.</Text>
+      ) : (
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>ID</Th>
+              <Th>Customer</Th>
+              <Th>Total</Th>
+              <Th>Actions</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {estimates.map((estimate) => (
+              <Tr key={estimate.id}>
+                <Td>{estimate.id}</Td>
+                <Td>{estimate.customer}</Td>
+                <Td>${estimate.total}</Td>
+                <Td>
+                  <HStack>
+                    <IconButton icon={<FaSearch />} aria-label="View" />
+                    <IconButton icon={<FaDownload />} aria-label="Download" />
+                  </HStack>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
       )}
     </Box>
   );
@@ -162,14 +193,53 @@ const TimesheetTab = () => {
   );
 };
 
-const LookupTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Parts Lookup
-    </Heading>
-    {/* Add parts search, pricing */}
-    <Text>Search for parts and check real-time pricing from vendors.</Text>
-  </Box>
-);
+const LookupTab = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [parts, setParts] = useState([]);
+
+  const handleSearch = async () => {
+    const response = await fetch(`/api/parts?search=${searchTerm}`);
+    const data = await response.json();
+    setParts(data);
+  };
+
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Parts Lookup
+      </Heading>
+      <HStack mb={4}>
+        <Input
+          placeholder="Search parts"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button onClick={handleSearch}>Search</Button>
+      </HStack>
+      {parts.length === 0 ? (
+        <Text>No parts found.</Text>
+      ) : (
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>Part Number</Th>
+              <Th>Description</Th>
+              <Th>Price</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {parts.map((part) => (
+              <Tr key={part.id}>
+                <Td>{part.partNumber}</Td>
+                <Td>{part.description}</Td>
+                <Td>${part.price}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
+    </Box>
+  );
+};
 
 export default Index;
