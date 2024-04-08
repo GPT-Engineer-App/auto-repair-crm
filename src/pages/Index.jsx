@@ -1,6 +1,10 @@
-import { Box, Heading, Text, Button, Image, Flex, Input, Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react";
-import { FaPlus, FaSearch, FaWrench, FaFileInvoice, FaComments, FaClock } from "react-icons/fa";
-import { useState } from "react";
+import { Box, Heading, Text, Button, Image, Flex, Input, Table, Thead, Tbody, Tr, Th, Td, useToast } from "@chakra-ui/react";
+import { FaPlus, FaSearch, FaWrench, FaFileInvoice, FaComments, FaClock, FaDownload } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import InvoiceGenerator from "../components/InvoiceGenerator";
+import TaskManager from "../components/TaskManager";
+import Chat from "../components/Chat";
+import EmployeeHoursTracker from "../components/EmployeeHoursTracker";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -78,74 +82,85 @@ const DashboardTab = () => (
   </Box>
 );
 
-const InvoicesTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Invoices
-    </Heading>
-    {/* Add invoice list, search, creation */}
-    <Table>
-      <Thead>
-        <Tr>
-          <Th>Invoice #</Th>
-          <Th>Customer</Th>
-          <Th>Vehicle</Th>
-          <Th>Amount</Th>
-          <Th>Status</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        <Tr>
-          <Td>1001</Td>
-          <Td>John Smith</Td>
-          <Td>2019 Honda Accord</Td>
-          <Td>$350.00</Td>
-          <Td>Paid</Td>
-        </Tr>
-      </Tbody>
-    </Table>
-  </Box>
-);
+const InvoicesTab = () => {
+  const toast = useToast();
 
-const EstimatesTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Estimates
-    </Heading>
-    {/* Add estimate creation, search */}
-    <Text>Create and manage service estimates for customers.</Text>
-  </Box>
-);
+  const handleInvoiceGenerated = () => {
+    toast({
+      title: "Invoice Generated",
+      description: "The invoice has been successfully generated and is ready for download.",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
 
-const TasksTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Tasks
-    </Heading>
-    {/* Add tasks list, assignment, tracking */}
-    <Text>Manage and assign tasks to employees. Track progress.</Text>
-  </Box>
-);
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Invoices
+      </Heading>
+      <InvoiceGenerator onInvoiceGenerated={handleInvoiceGenerated} />
+      <Button leftIcon={<FaDownload />} colorScheme="blue" mt={4}>
+        Download Invoice
+      </Button>
+    </Box>
+  );
+};
 
-const ChatTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Team Chat
-    </Heading>
-    {/* Add real-time chat component */}
-    <Text>Communicate with your team in real-time.</Text>
-  </Box>
-);
+const EstimatesTab = () => {
+  const [estimate, setEstimate] = useState(null);
 
-const TimesheetTab = () => (
-  <Box>
-    <Heading size="xl" mb={4}>
-      Timesheets
-    </Heading>
-    {/* Add timesheet entry, approval, reporting */}
-    <Text>Employees can log hours. Review and approve timesheets.</Text>
-  </Box>
-);
+  useEffect(() => {}, []);
+
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Estimates
+      </Heading>
+      {}
+      {estimate && (
+        <Box>
+          {}
+          <Text>Total Estimate: ${estimate.total}</Text>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const TasksTab = () => {
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Tasks
+      </Heading>
+      <TaskManager />
+    </Box>
+  );
+};
+
+const ChatTab = () => {
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Team Chat
+      </Heading>
+      <Chat />
+    </Box>
+  );
+};
+
+const TimesheetTab = () => {
+  return (
+    <Box>
+      <Heading size="xl" mb={4}>
+        Timesheets
+      </Heading>
+      <EmployeeHoursTracker />
+    </Box>
+  );
+};
 
 const LookupTab = () => (
   <Box>
